@@ -1086,7 +1086,7 @@ export default function ProductRegistrationApp() {
     try {
       setImportMessage("👤 Bezig met aanmaken gebruiker en inlog-account...")
 
-      const result = await createAuthUser(newUserEmail.trim(), newUserPassword, newUserName.trim())
+      const result = await createAuthUser(newUserEmail.trim(), newUserPassword, newUserName.trim(), newUserLevel)
 
       if (result.error) {
         console.error("Error creating auth user:", result.error)
