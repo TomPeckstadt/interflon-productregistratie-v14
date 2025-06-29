@@ -101,7 +101,7 @@ function ProductRegistrationApp() {
   const [connectionStatus, setConnectionStatus] = useState("Controleren...")
 
   // Data arrays - SINGLE SOURCE OF TRUTH
-  const [users, setUsers] = useState<string[]>([])
+  const [users, setUsers] = useState<{ name: string; role: string }[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [locations, setLocations] = useState<string[]>([])
   const [purposes, setPurposes] = useState<string[]>([])
@@ -740,8 +740,8 @@ function ProductRegistrationApp() {
   // Set default user when users are loaded
   useEffect(() => {
     if (!currentUser && users.length > 0) {
-      setCurrentUser(users[0])
-      console.log("👤 Set default user:", users[0])
+      setCurrentUser(users[0].name)
+      console.log("👤 Set default user:", users[0].name)
     }
   }, [users, currentUser])
 
@@ -827,12 +827,12 @@ function ProductRegistrationApp() {
   const loadMockData = () => {
     console.log("📱 Loading mock data...")
     const mockUsers = [
-      "Tom Peckstadt",
-      "Sven De Poorter",
-      "Nele Herteleer",
-      "Wim Peckstadt",
-      "Siegfried Weverbergh",
-      "Jan Janssen",
+      { name: "Tom Peckstadt", role: "Admin" },
+      { name: "Sven De Poorter", role: "User" },
+      { name: "Nele Herteleer", role: "User" },
+      { name: "Wim Peckstadt", role: "Admin" },
+      { name: "Siegfried Weverbergh", role: "User" },
+      { name: "Jan Janssen", role: "User" },
     ]
     const mockProducts = [
       { id: "1", name: "Interflon Metal Clean spray 500ml", qrcode: "IFLS001", categoryId: "1" },
@@ -934,7 +934,7 @@ function ProductRegistrationApp() {
 
   // Add functions
   const addNewUser = async () => {
-    if (newUserName.trim() && !users.includes(newUserName.trim())) {
+    if (newUserName.trim() && !users.find((user) => user.name === newUserName.trim())) {
       const userName = newUserName.trim()
       const result = await saveUser(userName)
       if (result.error) {
@@ -1221,8 +1221,8 @@ function ProductRegistrationApp() {
   // Function to get filtered and sorted users
   const getFilteredAndSortedUsers = () => {
     return users
-      .filter((user) => user.toLowerCase().includes(userSearchQuery.toLowerCase()))
-      .sort((a, b) => a.localeCompare(b, "nl", { sensitivity: "base" }))
+      .filter((user) => user.name.toLowerCase().includes(userSearchQuery.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name, "nl", { sensitivity: "base" }))
   }
 
   // Statistics functions
@@ -1460,8 +1460,8 @@ function ProductRegistrationApp() {
                         </SelectTrigger>
                         <SelectContent>
                           {users.map((user) => (
-                            <SelectItem key={user} value={user}>
-                              {user}
+                            <SelectItem key={user.name} value={user.name}>
+                              {user.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1627,8 +1627,8 @@ function ProductRegistrationApp() {
                     <SelectContent>
                       <SelectItem value="all">Alle gebruikers</SelectItem>
                       {users.map((user) => (
-                        <SelectItem key={user} value={user}>
-                          {user}
+                        <SelectItem key={user.name} value={user.name}>
+                          {user.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1902,18 +1902,21 @@ function ProductRegistrationApp() {
                         <div className="grid gap-3">
                           {getFilteredAndSortedUsers().map((user) => (
                             <div
-                              key={user}
+                              key={user.name}
                               className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
                             >
                               <div className="flex-1">
-                                <div className="font-medium text-gray-900">{user}</div>
+                                <div className="font-medium text-gray-900">{user.name}</div>
                                 <div className="text-sm text-gray-600">App gebruiker</div>
                               </div>
                               <div className="flex items-center gap-2">
+                                <div className="text-sm font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                  {user.role}
+                                </div>
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handleEditUser(user)}
+                                  onClick={() => handleEditUser(user.name)}
                                   className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
                                 >
                                   <Edit className="h-4 w-4" />
@@ -1921,7 +1924,7 @@ function ProductRegistrationApp() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => removeUser(user)}
+                                  onClick={() => removeUser(user.name)}
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <Trash2 className="h-4 w-4" />
