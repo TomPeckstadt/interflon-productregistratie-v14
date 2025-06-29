@@ -1412,6 +1412,32 @@ export default function ProductRegistrationApp() {
       }))
   }
 
+  // Function to get current user's role
+  const getCurrentUserRole = () => {
+    // First try to find user in the users array
+    const currentUserData = users.find((user) => user.name === loggedInUser)
+    if (currentUserData?.role) {
+      return currentUserData.role
+    }
+
+    // Fallback: check if this is a known admin user
+    const knownAdmins = ["Tom Peckstadt", "Wim Peckstadt", "wipeckstadt"]
+    if (knownAdmins.includes(loggedInUser)) {
+      return "admin"
+    }
+
+    // Default to user if no role found
+    return "user"
+  }
+
+  // Debug logging
+  console.log("🔍 Current user role check:", {
+    loggedInUser,
+    usersArray: users,
+    foundUser: users.find((user) => user.name === loggedInUser),
+    calculatedRole: getCurrentUserRole(),
+  })
+
   // CONDITIONAL RENDERING AFTER ALL HOOKS
   console.log("🎨 Rendering main app interface")
 
@@ -1642,42 +1668,52 @@ export default function ProductRegistrationApp() {
             >
               Registreren
             </TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700">
-              Geschiedenis ({registrations.length})
-            </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700">
-              Gebruikers ({users.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="products"
-              className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
-            >
-              Producten ({products.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="categories"
-              className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
-            >
-              Categorieën ({categories.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="locations"
-              className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
-            >
-              Locaties ({locations.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="purposes"
-              className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
-            >
-              Doelen ({purposes.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="statistics"
-              className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
-            >
-              Statistieken
-            </TabsTrigger>
+            {getCurrentUserRole() === "admin" && (
+              <>
+                <TabsTrigger
+                  value="history"
+                  className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                >
+                  Geschiedenis ({registrations.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="users"
+                  className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                >
+                  Gebruikers ({users.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="products"
+                  className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                >
+                  Producten ({products.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="categories"
+                  className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                >
+                  Categorieën ({categories.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="locations"
+                  className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                >
+                  Locaties ({locations.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="purposes"
+                  className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                >
+                  Doelen ({purposes.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="statistics"
+                  className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                >
+                  Statistieken
+                </TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           <TabsContent value="register">
@@ -1833,1004 +1869,1011 @@ export default function ProductRegistrationApp() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="history">
-            <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-xl">📋 Registratie Geschiedenis</CardTitle>
-                <CardDescription>Overzicht van alle product registraties</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Zoeken..."
-                      value={historySearchQuery}
-                      onChange={(e) => setHistorySearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
-                  <Select value={selectedHistoryUser} onValueChange={setSelectedHistoryUser}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Alle gebruikers" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Alle gebruikers</SelectItem>
-                      {users.map((user) => (
-                        <SelectItem key={user.name} value={user.name}>
-                          {user.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={selectedHistoryLocation} onValueChange={setSelectedHistoryLocation}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Alle locaties" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Alle locaties</SelectItem>
-                      {locations.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Input
-                    type="date"
-                    placeholder="Van datum"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                  />
-
-                  <Input
-                    type="date"
-                    placeholder="Tot datum"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
-                  />
-
-                  <div className="flex gap-2">
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="date">Datum</SelectItem>
-                        <SelectItem value="user">Gebruiker</SelectItem>
-                        <SelectItem value="product">Product</SelectItem>
-                        <SelectItem value="location">Locatie</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={sortOrder} onValueChange={setSortOrder}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="newest">Nieuwste eerst</SelectItem>
-                        <SelectItem value="oldest">Oudste eerst</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {(historySearchQuery ||
-                  selectedHistoryUser !== "all" ||
-                  selectedHistoryLocation !== "all" ||
-                  dateFrom ||
-                  dateTo) && (
-                  <div className="mb-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setHistorySearchQuery("")
-                        setSelectedHistoryUser("all")
-                        setSelectedHistoryLocation("all")
-                        setDateFrom("")
-                        setDateTo("")
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <X className="h-4 w-4" />
-                      Filters wissen
-                    </Button>
-                  </div>
-                )}
-
-                <div className="mb-4 text-sm text-gray-600">
-                  {getFilteredAndSortedRegistrations().length} van {registrations.length} registraties
-                </div>
-
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Datum</TableHead>
-                        <TableHead>Tijd</TableHead>
-                        <TableHead>Gebruiker</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Locatie</TableHead>
-                        <TableHead>Doel</TableHead>
-                        <TableHead>QR Code</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {getFilteredAndSortedRegistrations().map((registration) => (
-                        <TableRow key={registration.id}>
-                          <TableCell>{registration.date}</TableCell>
-                          <TableCell>{registration.time}</TableCell>
-                          <TableCell className="font-medium">{registration.user}</TableCell>
-                          <TableCell>{registration.product}</TableCell>
-                          <TableCell>{registration.location}</TableCell>
-                          <TableCell>{registration.purpose}</TableCell>
-                          <TableCell>
-                            {registration.qrcode && (
-                              <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                                {registration.qrcode}
-                              </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {getFilteredAndSortedRegistrations().length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-2">📭</div>
-                    <p>Geen registraties gevonden</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="users">
-            <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-xl">👥 Gebruikers Beheer</CardTitle>
-                <CardDescription>
-                  Beheer gebruikers die producten kunnen registreren en hun inloggegevens
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <Card className="border-2 border-dashed border-gray-200">
-                    <CardContent className="p-4">
-                      <h3 className="text-lg font-semibold mb-4">🆕 Nieuwe Gebruiker Toevoegen</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div>
-                          <Label className="text-sm font-medium">Naam</Label>
-                          <Input
-                            placeholder="Volledige naam"
-                            value={newUserName}
-                            onChange={(e) => setNewUserName(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Email</Label>
-                          <Input
-                            type="email"
-                            placeholder="email@dematic.com"
-                            value={newUserEmail}
-                            onChange={(e) => setNewUserEmail(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Wachtwoord</Label>
-                          <Input
-                            type="password"
-                            placeholder="Minimaal 6 tekens"
-                            value={newUserPassword}
-                            onChange={(e) => setNewUserPassword(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Niveau</Label>
-                          <Select value={newUserLevel} onValueChange={setNewUserLevel}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecteer niveau" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex items-end">
-                          <Button
-                            onClick={addNewUserWithAuth}
-                            disabled={
-                              !newUserName.trim() ||
-                              !newUserEmail.trim() ||
-                              !newUserPassword.trim() ||
-                              newUserPassword.length < 6
-                            }
-                            className="w-full flex items-center gap-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Gebruiker + Login Toevoegen
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-xs text-gray-600">
-                        <p>💡 Dit maakt zowel een app-gebruiker als een inlog-account aan in Supabase</p>
-                        <p>🔒 Wachtwoord moet minimaal 6 tekens lang zijn</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border border-gray-200">
-                    <CardContent className="p-4">
-                      <h3 className="text-lg font-semibold mb-4">➕ Snelle Gebruiker Toevoegen (alleen app)</h3>
-                      <div className="flex gap-4">
-                        <div className="flex-1">
-                          <Label className="text-sm font-medium">Naam</Label>
-                          <Input
-                            placeholder="Volledige naam"
-                            value={newUserName}
-                            onChange={(e) => setNewUserName(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && addNewUser()}
-                          />
-                        </div>
-                        <div className="flex items-end">
-                          <Button
-                            onClick={addNewUser}
-                            disabled={!newUserName.trim()}
-                            className="flex items-center gap-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Alleen App Gebruiker
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-xs text-gray-600">
-                        <p>💡 Dit voegt alleen een gebruiker toe die producten kan registreren (geen login)</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-4 mb-4">
-                      <Label className="text-sm font-medium">Zoeken:</Label>
-                      <div className="relative flex-1 max-w-sm">
+          {getCurrentUserRole() === "admin" && (
+            <>
+              <TabsContent value="history">
+                <Card className="shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+                    <CardTitle className="flex items-center gap-2 text-xl">📋 Registratie Geschiedenis</CardTitle>
+                    <CardDescription>Overzicht van alle product registraties</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+                      <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <Input
-                          placeholder="Zoek gebruikers..."
-                          value={userSearchQuery}
-                          onChange={(e) => setUserSearchQuery(e.target.value)}
+                          placeholder="Zoeken..."
+                          value={historySearchQuery}
+                          onChange={(e) => setHistorySearchQuery(e.target.value)}
                           className="pl-10"
                         />
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-600 mb-2">
-                        {getFilteredAndSortedUsers().length} van {users.length} gebruikers
-                      </div>
-
-                      {getFilteredAndSortedUsers().length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
-                          <div className="text-4xl mb-2">👤</div>
-                          <p>
-                            {userSearchQuery
-                              ? `Geen gebruikers gevonden voor "${userSearchQuery}"`
-                              : users.length === 0
-                                ? "Geen gebruikers gevonden"
-                                : "Geen gebruikers gevonden met deze zoekopdracht"}
-                          </p>
-                          {users.length === 0 && (
-                            <p className="text-sm mt-2">Voeg hierboven een nieuwe gebruiker toe</p>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="grid gap-3">
-                          {getFilteredAndSortedUsers().map((user) => (
-                            <div
-                              key={user.name}
-                              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
-                            >
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900">{user.name}</div>
-                                <div className="text-sm text-gray-600">App gebruiker</div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="text-sm font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                  {user.role}
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleEditUser(user.name)}
-                                  className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => removeUser(user.name)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="products">
-            <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-xl">📦 Producten Beheren</CardTitle>
-                <CardDescription>Voeg nieuwe producten toe of bewerk bestaande</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input
-                      type="text"
-                      placeholder="Product naam"
-                      value={newProductName}
-                      onChange={(e) => setNewProductName(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <Input
-                        type="text"
-                        placeholder="QR Code (optioneel)"
-                        value={newProductQrCode}
-                        onChange={(e) => setNewProductQrCode(e.target.value)}
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setQrScanMode("product-management")
-                          startQrScanner()
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700"
-                        disabled={showQrScanner}
-                      >
-                        <QrCode className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Select value={newProductCategory} onValueChange={setNewProductCategory}>
+                      <Select value={selectedHistoryUser} onValueChange={setSelectedHistoryUser}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecteer categorie" />
+                          <SelectValue placeholder="Alle gebruikers" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">Geen categorie</SelectItem>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
+                          <SelectItem value="all">Alle gebruikers</SelectItem>
+                          {users.map((user) => (
+                            <SelectItem key={user.name} value={user.name}>
+                              {user.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button onClick={addNewProduct} className="bg-orange-600 hover:bg-orange-700">
-                        <Plus className="mr-2 h-4 w-4" /> Toevoegen
-                      </Button>
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 p-4 bg-gray-50 rounded-lg border">
-                    <div className="flex-1">
-                      <Label className="text-sm font-medium mb-2 block">📊 Import/Export Producten</Label>
+                      <Select value={selectedHistoryLocation} onValueChange={setSelectedHistoryLocation}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Alle locaties" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Alle locaties</SelectItem>
+                          {locations.map((location) => (
+                            <SelectItem key={location} value={location}>
+                              {location}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Input
+                        type="date"
+                        placeholder="Van datum"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                      />
+
+                      <Input
+                        type="date"
+                        placeholder="Tot datum"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                      />
+
                       <div className="flex gap-2">
-                        <div>
-                          <input
-                            type="file"
-                            accept=".csv,.txt"
-                            onChange={handleImportExcel}
-                            className="hidden"
-                            id="excel-import"
-                          />
-                          <Button
-                            variant="outline"
-                            onClick={() => document.getElementById("excel-import")?.click()}
-                            className="flex items-center gap-2"
-                          >
-                            📥 Import CSV
-                          </Button>
-                        </div>
-                        <Button
-                          variant="outline"
-                          onClick={handleExportExcel}
-                          className="flex items-center gap-2 bg-transparent"
-                        >
-                          📤 Export CSV
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={printAllQRCodes}
-                          className="flex items-center gap-2 bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
-                        >
-                          <Printer className="h-4 w-4" />
-                          Print Alle QR Codes ({products.filter((p) => p.qrcode).length})
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={exportQRCodesForLabelPrinter}
-                          className="flex items-center gap-2 bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
-                        >
-                          🏷️ Export voor Labelprinter ({products.filter((p) => p.qrcode).length})
-                        </Button>
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="date">Datum</SelectItem>
+                            <SelectItem value="user">Gebruiker</SelectItem>
+                            <SelectItem value="product">Product</SelectItem>
+                            <SelectItem value="location">Locatie</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Select value={sortOrder} onValueChange={setSortOrder}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="newest">Nieuwste eerst</SelectItem>
+                            <SelectItem value="oldest">Oudste eerst</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="product-search" className="text-sm font-medium">
-                      Zoek product
-                    </Label>
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                      <Input
-                        id="product-search"
-                        type="text"
-                        placeholder="Zoek op naam, QR code of categorie..."
-                        value={productSearchFilter}
-                        onChange={(e) => setProductSearchFilter(e.target.value)}
-                        className="pl-8"
-                      />
-                      {productSearchFilter && (
+                    {(historySearchQuery ||
+                      selectedHistoryUser !== "all" ||
+                      selectedHistoryLocation !== "all" ||
+                      dateFrom ||
+                      dateTo) && (
+                      <div className="mb-4">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="absolute right-1 top-1 h-6 w-6 p-0"
-                          onClick={() => setProductSearchFilter("")}
+                          onClick={() => {
+                            setHistorySearchQuery("")
+                            setSelectedHistoryUser("all")
+                            setSelectedHistoryLocation("all")
+                            setDateFrom("")
+                            setDateTo("")
+                          }}
+                          className="flex items-center gap-2"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-4 w-4" />
+                          Filters wissen
                         </Button>
-                      )}
+                      </div>
+                    )}
+
+                    <div className="mb-4 text-sm text-gray-600">
+                      {getFilteredAndSortedRegistrations().length} van {registrations.length} registraties
                     </div>
-                  </div>
 
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Naam</TableHead>
-                        <TableHead>Categorie</TableHead>
-                        <TableHead>QR Code</TableHead>
-                        <TableHead>Bijlage</TableHead>
-                        <TableHead className="text-right">Acties</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {products
-                        .filter((product) => {
-                          if (!productSearchFilter) return true
-                          const searchLower = productSearchFilter.toLowerCase()
-                          const categoryName = product.categoryId
-                            ? categories.find((c) => c.id === product.categoryId)?.name || ""
-                            : ""
-
-                          return (
-                            product.name.toLowerCase().includes(searchLower) ||
-                            (product.qrcode && product.qrcode.toLowerCase().includes(searchLower)) ||
-                            categoryName.toLowerCase().includes(searchLower)
-                          )
-                        })
-                        .map((product) => (
-                          <TableRow key={product.id}>
-                            <TableCell className="font-medium">{product.name}</TableCell>
-                            <TableCell>
-                              {product.categoryId
-                                ? categories.find((c) => c.id === product.categoryId)?.name || "Onbekende categorie"
-                                : "Geen categorie"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {product.qrcode ? (
-                                  <>
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
-                                      {product.qrcode}
-                                    </span>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => printQRCode(product)}
-                                      className="text-xs bg-green-50 text-green-600 border-green-200 hover:bg-green-100 h-6 px-2"
-                                    >
-                                      <Printer className="h-3 w-3 mr-1" />
-                                      Print
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => generateQRCode(product)}
-                                    className="text-xs"
-                                  >
-                                    📱 Genereer QR
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {product.attachmentUrl ? (
-                                  <div className="flex items-center gap-2">
-                                    <a
-                                      href={product.attachmentUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 text-sm"
-                                    >
-                                      📎 {product.attachmentName || "Bijlage"}
-                                    </a>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleRemoveAttachment(product)}
-                                      className="text-red-600 hover:text-red-800 p-1"
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <input
-                                      type="file"
-                                      accept=".pdf"
-                                      onChange={(e) => handleAttachmentUpload(product, e)}
-                                      className="hidden"
-                                      id={`file-${product.id}`}
-                                    />
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => document.getElementById(`file-${product.id}`)?.click()}
-                                      className="text-xs"
-                                    >
-                                      📎 PDF toevoegen
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleEditProduct(product)}
-                                  className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="icon"
-                                  onClick={() => removeProduct(product)}
-                                  className="bg-red-500 hover:bg-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Datum</TableHead>
+                            <TableHead>Tijd</TableHead>
+                            <TableHead>Gebruiker</TableHead>
+                            <TableHead>Product</TableHead>
+                            <TableHead>Locatie</TableHead>
+                            <TableHead>Doel</TableHead>
+                            <TableHead>QR Code</TableHead>
                           </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="categories">
-            <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-xl">🗂️ Categorieën Beheer</CardTitle>
-                <CardDescription>Beheer product categorieën voor betere organisatie</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Nieuwe categorie naam"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addNewCategory()}
-                      />
-                    </div>
-                    <Button
-                      onClick={addNewCategory}
-                      disabled={!newCategoryName.trim()}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Toevoegen
-                    </Button>
-                  </div>
-
-                  <div className="grid gap-2">
-                    {categories.map((category) => (
-                      <div
-                        key={category.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
-                      >
-                        <span className="font-medium">{category.name}</span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleEditCategory(category)}
-                            className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeCategory(category)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {categories.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <div className="text-4xl mb-2">🗂️</div>
-                      <p>Geen categorieën gevonden</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="locations">
-            <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-xl">📍 Locaties Beheer</CardTitle>
-                <CardDescription>Beheer beschikbare locaties voor product registratie</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Nieuwe locatie naam"
-                        value={newLocationName}
-                        onChange={(e) => setNewLocationName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addNewLocation()}
-                      />
-                    </div>
-                    <Button
-                      onClick={addNewLocation}
-                      disabled={!newLocationName.trim()}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Toevoegen
-                    </Button>
-                  </div>
-
-                  <div className="grid gap-2">
-                    {locations.map((location) => (
-                      <div
-                        key={location}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
-                      >
-                        <span className="font-medium">{location}</span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleEditLocation(location)}
-                            className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeLocation(location)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {locations.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <div className="text-4xl mb-2">📍</div>
-                      <p>Geen locaties gevonden</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="purposes">
-            <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-xl">🎯 Doelen Beheer</CardTitle>
-                <CardDescription>Beheer beschikbare doelen voor product registratie</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Nieuw doel naam"
-                        value={newPurposeName}
-                        onChange={(e) => setNewPurposeName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addNewPurpose()}
-                      />
-                    </div>
-                    <Button
-                      onClick={addNewPurpose}
-                      disabled={!newPurposeName.trim()}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Toevoegen
-                    </Button>
-                  </div>
-
-                  <div className="grid gap-2">
-                    {purposes.map((purpose) => (
-                      <div key={purpose} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                        <span className="font-medium">{purpose}</span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleEditPurpose(purpose)}
-                            className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removePurpose(purpose)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {purposes.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <div className="text-4xl mb-2">🎯</div>
-                      <p>Geen doelen gevonden</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="statistics">
-            <div className="space-y-6">
-              <Card className="shadow-sm">
-                <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
-                  <CardTitle className="flex items-center gap-2 text-xl">📊 Statistieken</CardTitle>
-                  <CardDescription>Overzicht van product registraties</CardDescription>
-                </CardHeader>
-              </Card>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <div className="text-2xl font-bold text-gray-900 mb-2">Totaal Registraties</div>
-                    <div className="text-4xl font-bold text-blue-600">{registrations.length}</div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <div className="text-2xl font-bold text-gray-900 mb-2">Unieke Gebruikers</div>
-                    <div className="text-4xl font-bold text-green-600">
-                      {new Set(registrations.map((r) => r.user)).size}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <div className="text-2xl font-bold text-gray-900 mb-2">Unieke Producten</div>
-                    <div className="text-4xl font-bold text-purple-600">
-                      {new Set(registrations.map((r) => r.product)).size}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card className="shadow-sm">
-                <CardHeader className="bg-gray-50 border-b">
-                  <CardTitle className="text-xl">Recente Activiteit</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Datum</TableHead>
-                          <TableHead>Gebruiker</TableHead>
-                          <TableHead>Product</TableHead>
-                          <TableHead>Locatie</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {registrations
-                          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                          .slice(0, 10)
-                          .map((registration) => (
+                        </TableHeader>
+                        <TableBody>
+                          {getFilteredAndSortedRegistrations().map((registration) => (
                             <TableRow key={registration.id}>
-                              <TableCell>
-                                {new Date(registration.timestamp).toLocaleDateString("nl-NL")}{" "}
-                                {new Date(registration.timestamp).toLocaleTimeString("nl-NL", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </TableCell>
+                              <TableCell>{registration.date}</TableCell>
+                              <TableCell>{registration.time}</TableCell>
                               <TableCell className="font-medium">{registration.user}</TableCell>
                               <TableCell>{registration.product}</TableCell>
                               <TableCell>{registration.location}</TableCell>
+                              <TableCell>{registration.purpose}</TableCell>
+                              <TableCell>
+                                {registration.qrcode && (
+                                  <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                                    {registration.qrcode}
+                                  </span>
+                                )}
+                              </TableCell>
                             </TableRow>
                           ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+                        </TableBody>
+                      </Table>
+                    </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    {getFilteredAndSortedRegistrations().length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <div className="text-4xl mb-2">📭</div>
+                        <p>Geen registraties gevonden</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="users">
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-gray-50 border-b">
-                    <CardTitle className="text-lg">Top 5 Gebruikers</CardTitle>
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
+                    <CardTitle className="flex items-center gap-2 text-xl">👥 Gebruikers Beheer</CardTitle>
+                    <CardDescription>
+                      Beheer gebruikers die producten kunnen registreren en hun inloggegevens
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-600 border-b pb-2">
-                        <div>Gebruiker</div>
-                        <div className="text-right">Aantal</div>
-                      </div>
-                      {getTopUsers().map(([user, count]) => (
-                        <div key={user} className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="font-medium">{user}</div>
-                          <div className="text-right font-bold">{count}</div>
+                    <div className="space-y-6">
+                      <Card className="border-2 border-dashed border-gray-200">
+                        <CardContent className="p-4">
+                          <h3 className="text-lg font-semibold mb-4">🆕 Nieuwe Gebruiker Toevoegen</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div>
+                              <Label className="text-sm font-medium">Naam</Label>
+                              <Input
+                                placeholder="Volledige naam"
+                                value={newUserName}
+                                onChange={(e) => setNewUserName(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Email</Label>
+                              <Input
+                                type="email"
+                                placeholder="email@dematic.com"
+                                value={newUserEmail}
+                                onChange={(e) => setNewUserEmail(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Wachtwoord</Label>
+                              <Input
+                                type="password"
+                                placeholder="Minimaal 6 tekens"
+                                value={newUserPassword}
+                                onChange={(e) => setNewUserPassword(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Niveau</Label>
+                              <Select value={newUserLevel} onValueChange={setNewUserLevel}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecteer niveau" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-end">
+                              <Button
+                                onClick={addNewUserWithAuth}
+                                disabled={
+                                  !newUserName.trim() ||
+                                  !newUserEmail.trim() ||
+                                  !newUserPassword.trim() ||
+                                  newUserPassword.length < 6
+                                }
+                                className="w-full flex items-center gap-2"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Gebruiker + Login Toevoegen
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-600">
+                            <p>💡 Dit maakt zowel een app-gebruiker als een inlog-account aan in Supabase</p>
+                            <p>🔒 Wachtwoord moet minimaal 6 tekens lang zijn</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border border-gray-200">
+                        <CardContent className="p-4">
+                          <h3 className="text-lg font-semibold mb-4">➕ Snelle Gebruiker Toevoegen (alleen app)</h3>
+                          <div className="flex gap-4">
+                            <div className="flex-1">
+                              <Label className="text-sm font-medium">Naam</Label>
+                              <Input
+                                placeholder="Volledige naam"
+                                value={newUserName}
+                                onChange={(e) => setNewUserName(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && addNewUser()}
+                              />
+                            </div>
+                            <div className="flex items-end">
+                              <Button
+                                onClick={addNewUser}
+                                disabled={!newUserName.trim()}
+                                className="flex items-center gap-2"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Alleen App Gebruiker
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-600">
+                            <p>💡 Dit voegt alleen een gebruiker toe die producten kan registreren (geen login)</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-4 mb-4">
+                          <Label className="text-sm font-medium">Zoeken:</Label>
+                          <div className="relative flex-1 max-w-sm">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <Input
+                              placeholder="Zoek gebruikers..."
+                              value={userSearchQuery}
+                              onChange={(e) => setUserSearchQuery(e.target.value)}
+                              className="pl-10"
+                            />
+                          </div>
                         </div>
-                      ))}
+
+                        <div className="space-y-2">
+                          <div className="text-sm text-gray-600 mb-2">
+                            {getFilteredAndSortedUsers().length} van {users.length} gebruikers
+                          </div>
+
+                          {getFilteredAndSortedUsers().length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              <div className="text-4xl mb-2">👤</div>
+                              <p>
+                                {userSearchQuery
+                                  ? `Geen gebruikers gevonden voor "${userSearchQuery}"`
+                                  : users.length === 0
+                                    ? "Geen gebruikers gevonden"
+                                    : "Geen gebruikers gevonden met deze zoekopdracht"}
+                              </p>
+                              {users.length === 0 && (
+                                <p className="text-sm mt-2">Voeg hierboven een nieuwe gebruiker toe</p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="grid gap-3">
+                              {getFilteredAndSortedUsers().map((user) => (
+                                <div
+                                  key={user.name}
+                                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                                >
+                                  <div className="flex-1">
+                                    <div className="font-medium text-gray-900">{user.name}</div>
+                                    <div className="text-sm text-gray-600">App gebruiker</div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="text-sm font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                      {user.role}
+                                    </div>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handleEditUser(user.name)}
+                                      className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => removeUser(user.name)}
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
 
+              <TabsContent value="products">
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-gray-50 border-b">
-                    <CardTitle className="text-lg">Top 5 Producten</CardTitle>
+                  <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
+                    <CardTitle className="flex items-center gap-2 text-xl">📦 Producten Beheren</CardTitle>
+                    <CardDescription>Voeg nieuwe producten toe of bewerk bestaande</CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-600 border-b pb-2">
-                        <div>Product</div>
-                        <div className="text-right">Aantal</div>
-                      </div>
-                      {getTopProducts().map(([product, count]) => (
-                        <div key={product} className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="font-medium">{product}</div>
-                          <div className="text-right font-bold">{count}</div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                          type="text"
+                          placeholder="Product naam"
+                          value={newProductName}
+                          onChange={(e) => setNewProductName(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                            type="text"
+                            placeholder="QR Code (optioneel)"
+                            value={newProductQrCode}
+                            onChange={(e) => setNewProductQrCode(e.target.value)}
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setQrScanMode("product-management")
+                              startQrScanner()
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700"
+                            disabled={showQrScanner}
+                          >
+                            <QrCode className="w-4 h-4" />
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-sm">
-                  <CardHeader className="bg-gray-50 border-b">
-                    <CardTitle className="text-lg">Top 5 Locaties</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-600 border-b pb-2">
-                        <div>Locatie</div>
-                        <div className="text-right">Aantal</div>
-                      </div>
-                      {getTopLocations().map(([location, count]) => (
-                        <div key={location} className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="font-medium">{location}</div>
-                          <div className="text-right font-bold">{count}</div>
+                        <div className="flex gap-2">
+                          <Select value={newProductCategory} onValueChange={setNewProductCategory}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecteer categorie" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Geen categorie</SelectItem>
+                              {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button onClick={addNewProduct} className="bg-orange-600 hover:bg-orange-700">
+                            <Plus className="mr-2 h-4 w-4" /> Toevoegen
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
 
-                <Card className="shadow-sm">
-                  <CardHeader className="bg-gray-50 border-b">
-                    <CardTitle className="text-lg">Top 5 Producten</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex justify-center">
-                        <div className="relative w-32 h-32">
-                          <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                            {(() => {
-                              const chartData = getProductChartData()
-                              const total = chartData.reduce((sum, item) => sum + item.count, 0)
-                              let currentAngle = 0
-
-                              return chartData.map((item, index) => {
-                                const percentage = (item.count / total) * 100
-                                const angle = (percentage / 100) * 360
-                                const startAngle = currentAngle
-                                const endAngle = currentAngle + angle
-
-                                const x1 = 50 + 40 * Math.cos((startAngle * Math.PI) / 180)
-                                const y1 = 50 + 40 * Math.sin((startAngle * Math.PI) / 180)
-                                const x2 = 50 + 40 * Math.cos((endAngle * Math.PI) / 180)
-                                const y2 = 50 + 40 * Math.sin((endAngle * Math.PI) / 180)
-
-                                const largeArcFlag = angle > 180 ? 1 : 0
-
-                                const pathData = [
-                                  `M 50 50`,
-                                  `L ${x1} ${y1}`,
-                                  `A 40 40 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                                  "Z",
-                                ].join(" ")
-
-                                currentAngle += angle
-
-                                return (
-                                  <path key={index} d={pathData} fill={item.color} stroke="white" strokeWidth="1" />
-                                )
-                              })
-                            })()}
-                          </svg>
+                      <div className="flex flex-col sm:flex-row gap-4 p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex-1">
+                          <Label className="text-sm font-medium mb-2 block">📊 Import/Export Producten</Label>
+                          <div className="flex gap-2">
+                            <div>
+                              <input
+                                type="file"
+                                accept=".csv,.txt"
+                                onChange={handleImportExcel}
+                                className="hidden"
+                                id="excel-import"
+                              />
+                              <Button
+                                variant="outline"
+                                onClick={() => document.getElementById("excel-import")?.click()}
+                                className="flex items-center gap-2"
+                              >
+                                📥 Import CSV
+                              </Button>
+                            </div>
+                            <Button
+                              variant="outline"
+                              onClick={handleExportExcel}
+                              className="flex items-center gap-2 bg-transparent"
+                            >
+                              📤 Export CSV
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={printAllQRCodes}
+                              className="flex items-center gap-2 bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                            >
+                              <Printer className="h-4 w-4" />
+                              Print Alle QR Codes ({products.filter((p) => p.qrcode).length})
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={exportQRCodesForLabelPrinter}
+                              className="flex items-center gap-2 bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
+                            >
+                              🏷️ Export voor Labelprinter ({products.filter((p) => p.qrcode).length})
+                            </Button>
+                          </div>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        {getProductChartData().map((item, index) => (
-                          <div key={index} className="flex items-center gap-2 text-xs">
-                            <div
-                              className="w-3 h-3 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: item.color }}
-                            ></div>
-                            <div className="flex-1 truncate" title={item.product}>
-                              {item.product}
-                            </div>
-                            <div className="font-bold">{item.count}</div>
-                          </div>
-                        ))}
+                        <Label htmlFor="product-search" className="text-sm font-medium">
+                          Zoek product
+                        </Label>
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                          <Input
+                            id="product-search"
+                            type="text"
+                            placeholder="Zoek op naam, QR code of categorie..."
+                            value={productSearchFilter}
+                            onChange={(e) => setProductSearchFilter(e.target.value)}
+                            className="pl-8"
+                          />
+                          {productSearchFilter && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-1 top-1 h-6 w-6 p-0"
+                              onClick={() => setProductSearchFilter("")}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
+
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Naam</TableHead>
+                            <TableHead>Categorie</TableHead>
+                            <TableHead>QR Code</TableHead>
+                            <TableHead>Bijlage</TableHead>
+                            <TableHead className="text-right">Acties</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {products
+                            .filter((product) => {
+                              if (!productSearchFilter) return true
+                              const searchLower = productSearchFilter.toLowerCase()
+                              const categoryName = product.categoryId
+                                ? categories.find((c) => c.id === product.categoryId)?.name || ""
+                                : ""
+
+                              return (
+                                product.name.toLowerCase().includes(searchLower) ||
+                                (product.qrcode && product.qrcode.toLowerCase().includes(searchLower)) ||
+                                categoryName.toLowerCase().includes(searchLower)
+                              )
+                            })
+                            .map((product) => (
+                              <TableRow key={product.id}>
+                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell>
+                                  {product.categoryId
+                                    ? categories.find((c) => c.id === product.categoryId)?.name || "Onbekende categorie"
+                                    : "Geen categorie"}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    {product.qrcode ? (
+                                      <>
+                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                                          {product.qrcode}
+                                        </span>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => printQRCode(product)}
+                                          className="text-xs bg-green-50 text-green-600 border-green-200 hover:bg-green-100 h-6 px-2"
+                                        >
+                                          <Printer className="h-3 w-3 mr-1" />
+                                          Print
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => generateQRCode(product)}
+                                        className="text-xs"
+                                      >
+                                        📱 Genereer QR
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    {product.attachmentUrl ? (
+                                      <div className="flex items-center gap-2">
+                                        <a
+                                          href={product.attachmentUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:text-blue-800 text-sm"
+                                        >
+                                          📎 {product.attachmentName || "Bijlage"}
+                                        </a>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleRemoveAttachment(product)}
+                                          className="text-red-600 hover:text-red-800 p-1"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <input
+                                          type="file"
+                                          accept=".pdf"
+                                          onChange={(e) => handleAttachmentUpload(product, e)}
+                                          className="hidden"
+                                          id={`file-${product.id}`}
+                                        />
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => document.getElementById(`file-${product.id}`)?.click()}
+                                          className="text-xs"
+                                        >
+                                          📎 PDF toevoegen
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handleEditProduct(product)}
+                                      className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="icon"
+                                      onClick={() => removeProduct(product)}
+                                      className="bg-red-500 hover:bg-red-600"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                        </TableBody>
+                      </Table>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-          </TabsContent>
+              </TabsContent>
+
+              <TabsContent value="categories">
+                <Card className="shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b">
+                    <CardTitle className="flex items-center gap-2 text-xl">🗂️ Categorieën Beheer</CardTitle>
+                    <CardDescription>Beheer product categorieën voor betere organisatie</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                          <Input
+                            placeholder="Nieuwe categorie naam"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && addNewCategory()}
+                          />
+                        </div>
+                        <Button
+                          onClick={addNewCategory}
+                          disabled={!newCategoryName.trim()}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Toevoegen
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-2">
+                        {categories.map((category) => (
+                          <div
+                            key={category.id}
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+                          >
+                            <span className="font-medium">{category.name}</span>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEditCategory(category)}
+                                className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeCategory(category)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {categories.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <div className="text-4xl mb-2">🗂️</div>
+                          <p>Geen categorieën gevonden</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="locations">
+                <Card className="shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 border-b">
+                    <CardTitle className="flex items-center gap-2 text-xl">📍 Locaties Beheer</CardTitle>
+                    <CardDescription>Beheer beschikbare locaties voor product registratie</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                          <Input
+                            placeholder="Nieuwe locatie naam"
+                            value={newLocationName}
+                            onChange={(e) => setNewLocationName(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && addNewLocation()}
+                          />
+                        </div>
+                        <Button
+                          onClick={addNewLocation}
+                          disabled={!newLocationName.trim()}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Toevoegen
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-2">
+                        {locations.map((location) => (
+                          <div
+                            key={location}
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+                          >
+                            <span className="font-medium">{location}</span>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEditLocation(location)}
+                                className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeLocation(location)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {locations.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <div className="text-4xl mb-2">📍</div>
+                          <p>Geen locaties gevonden</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="purposes">
+                <Card className="shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 border-b">
+                    <CardTitle className="flex items-center gap-2 text-xl">🎯 Doelen Beheer</CardTitle>
+                    <CardDescription>Beheer beschikbare doelen voor product registratie</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                          <Input
+                            placeholder="Nieuw doel naam"
+                            value={newPurposeName}
+                            onChange={(e) => setNewPurposeName(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && addNewPurpose()}
+                          />
+                        </div>
+                        <Button
+                          onClick={addNewPurpose}
+                          disabled={!newPurposeName.trim()}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Toevoegen
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-2">
+                        {purposes.map((purpose) => (
+                          <div
+                            key={purpose}
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+                          >
+                            <span className="font-medium">{purpose}</span>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEditPurpose(purpose)}
+                                className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removePurpose(purpose)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {purposes.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <div className="text-4xl mb-2">🎯</div>
+                          <p>Geen doelen gevonden</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="statistics">
+                <div className="space-y-6">
+                  <Card className="shadow-sm">
+                    <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
+                      <CardTitle className="flex items-center gap-2 text-xl">📊 Statistieken</CardTitle>
+                      <CardDescription>Overzicht van product registraties</CardDescription>
+                    </CardHeader>
+                  </Card>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="shadow-sm">
+                      <CardContent className="p-6">
+                        <div className="text-2xl font-bold text-gray-900 mb-2">Totaal Registraties</div>
+                        <div className="text-4xl font-bold text-blue-600">{registrations.length}</div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-sm">
+                      <CardContent className="p-6">
+                        <div className="text-2xl font-bold text-gray-900 mb-2">Unieke Gebruikers</div>
+                        <div className="text-4xl font-bold text-green-600">
+                          {new Set(registrations.map((r) => r.user)).size}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-sm">
+                      <CardContent className="p-6">
+                        <div className="text-2xl font-bold text-gray-900 mb-2">Unieke Producten</div>
+                        <div className="text-4xl font-bold text-purple-600">
+                          {new Set(registrations.map((r) => r.product)).size}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card className="shadow-sm">
+                    <CardHeader className="bg-gray-50 border-b">
+                      <CardTitle className="text-xl">Recente Activiteit</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Datum</TableHead>
+                              <TableHead>Gebruiker</TableHead>
+                              <TableHead>Product</TableHead>
+                              <TableHead>Locatie</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {registrations
+                              .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                              .slice(0, 10)
+                              .map((registration) => (
+                                <TableRow key={registration.id}>
+                                  <TableCell>
+                                    {new Date(registration.timestamp).toLocaleDateString("nl-NL")}{" "}
+                                    {new Date(registration.timestamp).toLocaleTimeString("nl-NL", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </TableCell>
+                                  <TableCell className="font-medium">{registration.user}</TableCell>
+                                  <TableCell>{registration.product}</TableCell>
+                                  <TableCell>{registration.location}</TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-gray-50 border-b">
+                        <CardTitle className="text-lg">Top 5 Gebruikers</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-600 border-b pb-2">
+                            <div>Gebruiker</div>
+                            <div className="text-right">Aantal</div>
+                          </div>
+                          {getTopUsers().map(([user, count]) => (
+                            <div key={user} className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="font-medium">{user}</div>
+                              <div className="text-right font-bold">{count}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-gray-50 border-b">
+                        <CardTitle className="text-lg">Top 5 Producten</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-600 border-b pb-2">
+                            <div>Product</div>
+                            <div className="text-right">Aantal</div>
+                          </div>
+                          {getTopProducts().map(([product, count]) => (
+                            <div key={product} className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="font-medium">{product}</div>
+                              <div className="text-right font-bold">{count}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-gray-50 border-b">
+                        <CardTitle className="text-lg">Top 5 Locaties</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-600 border-b pb-2">
+                            <div>Locatie</div>
+                            <div className="text-right">Aantal</div>
+                          </div>
+                          {getTopLocations().map(([location, count]) => (
+                            <div key={location} className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="font-medium">{location}</div>
+                              <div className="text-right font-bold">{count}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-gray-50 border-b">
+                        <CardTitle className="text-lg">Top 5 Producten</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div className="flex justify-center">
+                            <div className="relative w-32 h-32">
+                              <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                                {(() => {
+                                  const chartData = getProductChartData()
+                                  const total = chartData.reduce((sum, item) => sum + item.count, 0)
+                                  let currentAngle = 0
+
+                                  return chartData.map((item, index) => {
+                                    const percentage = (item.count / total) * 100
+                                    const angle = (percentage / 100) * 360
+                                    const startAngle = currentAngle
+                                    const endAngle = currentAngle + angle
+
+                                    const x1 = 50 + 40 * Math.cos((startAngle * Math.PI) / 180)
+                                    const y1 = 50 + 40 * Math.sin((startAngle * Math.PI) / 180)
+                                    const x2 = 50 + 40 * Math.cos((endAngle * Math.PI) / 180)
+                                    const y2 = 50 + 40 * Math.sin((endAngle * Math.PI) / 180)
+
+                                    const largeArcFlag = angle > 180 ? 1 : 0
+
+                                    const pathData = [
+                                      `M 50 50`,
+                                      `L ${x1} ${y1}`,
+                                      `A 40 40 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                                      "Z",
+                                    ].join(" ")
+
+                                    currentAngle += angle
+
+                                    return (
+                                      <path key={index} d={pathData} fill={item.color} stroke="white" strokeWidth="1" />
+                                    )
+                                  })
+                                })()}
+                              </svg>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {getProductChartData().map((item, index) => (
+                              <div key={index} className="flex items-center gap-2 text-xs">
+                                <div
+                                  className="w-3 h-3 rounded-full flex-shrink-0"
+                                  style={{ backgroundColor: item.color }}
+                                ></div>
+                                <div className="flex-1 truncate" title={item.product}>
+                                  {item.product}
+                                </div>
+                                <div className="font-bold">{item.count}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+            </>
+          )}
         </Tabs>
 
         {/* QR Scanner Modal */}
