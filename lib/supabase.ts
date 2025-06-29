@@ -148,13 +148,19 @@ interface Registration {
 
 // User interface with role
 interface User {
-  id: string
   name: string
   role: string
 }
 
 // Mock data for when Supabase is not configured
-const mockUsers = ["Jan Janssen", "Marie Pietersen", "Piet de Vries", "Anna van der Berg"]
+const mockUsers: User[] = [
+  { name: "Tom Peckstadt", role: "admin" },
+  { name: "Sven De Poorter", role: "user" },
+  { name: "Nele Herteleer", role: "user" },
+  { name: "Wim Peckstadt", role: "admin" },
+  { name: "Siegfried Weverbergh", role: "user" },
+  { name: "Jan Janssen", role: "user" },
+]
 const mockProducts: Product[] = [
   { id: "1", name: "Interflon Fin Super", qrcode: "IFLS001", categoryId: "1" },
   { id: "2", name: "Interflon Food Lube", qrcode: "IFFL002", categoryId: "1" },
@@ -262,16 +268,21 @@ export const fetchUsers = async () => {
 
   try {
     console.log("📊 Fetching users from Supabase...")
-    const { data, error } = await supabase.from("users").select("name").order("name")
+    const { data, error } = await supabase.from("users").select("name, role").order("name")
 
     if (error) {
       console.error("❌ Error fetching users:", error)
       return { data: mockUsers, error }
     }
 
-    const userNames = data?.map((user: any) => user.name) || []
-    console.log(`📊 Fetched ${userNames.length} users from Supabase`)
-    return { data: userNames.length > 0 ? userNames : mockUsers, error: null }
+    const users: User[] =
+      data?.map((user: any) => ({
+        name: user.name,
+        role: user.role || "user",
+      })) || []
+
+    console.log(`📊 Fetched ${users.length} users from Supabase`)
+    return { data: users.length > 0 ? users : mockUsers, error: null }
   } catch (error) {
     console.error("❌ Error in fetchUsers:", error)
     return { data: mockUsers, error }
@@ -1010,7 +1021,7 @@ export const updateAuthUser = async (
 }
 
 // SIMPLIFIED: Real-time subscriptions
-export const subscribeToUsers = (callback: (users: string[]) => void) => {
+export const subscribeToUsers = (callback: (users: User[]) => void) => {
   if (!supabase) {
     console.log("🔔 No Supabase - users subscription disabled")
     return null
