@@ -51,7 +51,6 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, Trash2, Search, X, QrCode, ChevronDown, Edit, Printer } from "lucide-react"
-import { AuthGuard, useAuth } from "@/lib/auth-components"
 
 interface Product {
   id: string
@@ -81,7 +80,7 @@ interface Registration {
   created_at?: string
 }
 
-function ProductRegistrationApp() {
+export default function ProductRegistrationApp() {
   // ALL HOOKS MUST BE AT THE TOP - NEVER CONDITIONAL
   const [isReady, setIsReady] = useState(false)
   const [error, setError] = useState<string>("")
@@ -101,7 +100,7 @@ function ProductRegistrationApp() {
   const [connectionStatus, setConnectionStatus] = useState("Controleren...")
 
   // Data arrays - SINGLE SOURCE OF TRUTH
-  const [users, setUsers] = useState<string[]>([])
+  const [users, setUsers] = useState<{ name: string; role: string }[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [locations, setLocations] = useState<string[]>([])
   const [purposes, setPurposes] = useState<string[]>([])
@@ -120,6 +119,7 @@ function ProductRegistrationApp() {
   // Auth user management states
   const [newUserEmail, setNewUserEmail] = useState("")
   const [newUserPassword, setNewUserPassword] = useState("")
+  const [newUserLevel, setNewUserLevel] = useState("user")
 
   // Edit states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -739,8 +739,8 @@ function ProductRegistrationApp() {
   // Set default user when users are loaded
   useEffect(() => {
     if (!currentUser && users.length > 0) {
-      setCurrentUser(users[0])
-      console.log("👤 Set default user:", users[0])
+      setCurrentUser(users[0].name)
+      console.log("👤 Set default user:", users[0].name)
     }
   }, [users, currentUser])
 
@@ -826,12 +826,12 @@ function ProductRegistrationApp() {
   const loadMockData = () => {
     console.log("📱 Loading mock data...")
     const mockUsers = [
-      "Tom Peckstadt",
-      "Sven De Poorter",
-      "Nele Herteleer",
-      "Wim Peckstadt",
-      "Siegfried Weverbergh",
-      "Jan Janssen",
+      { name: "Tom Peckstadt", role: "admin" },
+      { name: "Sven De Poorter", role: "user" },
+      { name: "Nele Herteleer", role: "user" },
+      { name: "Wim Peckstadt", role: "admin" },
+      { name: "Siegfried Weverbergh", role: "user" },
+      { name: "Jan Janssen", role: "user" },
     ]
     const mockProducts = [
       { id: "1", name: "Interflon Metal Clean spray 500ml", qrcode: "IFLS001", categoryId: "1" },
@@ -933,7 +933,7 @@ function ProductRegistrationApp() {
 
   // Add functions
   const addNewUser = async () => {
-    if (newUserName.trim() && !users.includes(newUserName.trim())) {
+    if (newUserName.trim() && !users.find((user) => user.name === newUserName.trim())) {
       const userName = newUserName.trim()
       const result = await saveUser(userName)
       if (result.error) {
@@ -1220,8 +1220,8 @@ function ProductRegistrationApp() {
   // Function to get filtered and sorted users
   const getFilteredAndSortedUsers = () => {
     return users
-      .filter((user) => user.toLowerCase().includes(userSearchQuery.toLowerCase()))
-      .sort((a, b) => a.localeCompare(b, "nl", { sensitivity: "base" }))
+      .filter((user) => user.name.toLowerCase().includes(userSearchQuery.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name, "nl", { sensitivity: "base" }))
   }
 
   // Statistics functions
@@ -1369,9 +1369,6 @@ function ProductRegistrationApp() {
                 </div>
                 <div className="hidden md:block">{registrations.length} registraties</div>
               </div>
-
-              {/* User info and logout */}
-              <UserInfo />
             </div>
           </div>
         </div>
@@ -1459,8 +1456,8 @@ function ProductRegistrationApp() {
                         </SelectTrigger>
                         <SelectContent>
                           {users.map((user) => (
-                            <SelectItem key={user} value={user}>
-                              {user}
+                            <SelectItem key={user.name} value={user.name}>
+                              {user.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1626,8 +1623,8 @@ function ProductRegistrationApp() {
                     <SelectContent>
                       <SelectItem value="all">Alle gebruikers</SelectItem>
                       {users.map((user) => (
-                        <SelectItem key={user} value={user}>
-                          {user}
+                        <SelectItem key={user.name} value={user.name}>
+                          {user.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1772,7 +1769,7 @@ function ProductRegistrationApp() {
                   <Card className="border-2 border-dashed border-gray-200">
                     <CardContent className="p-4">
                       <h3 className="text-lg font-semibold mb-4">🆕 Nieuwe Gebruiker Toevoegen</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                           <Label className="text-sm font-medium">Naam</Label>
                           <Input
@@ -1798,6 +1795,18 @@ function ProductRegistrationApp() {
                             value={newUserPassword}
                             onChange={(e) => setNewUserPassword(e.target.value)}
                           />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Niveau</Label>
+                          <Select value={newUserLevel} onValueChange={setNewUserLevel}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecteer niveau" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="flex items-end">
                           <Button
@@ -1889,18 +1898,21 @@ function ProductRegistrationApp() {
                         <div className="grid gap-3">
                           {getFilteredAndSortedUsers().map((user) => (
                             <div
-                              key={user}
+                              key={user.name}
                               className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
                             >
                               <div className="flex-1">
-                                <div className="font-medium text-gray-900">{user}</div>
+                                <div className="font-medium text-gray-900">{user.name}</div>
                                 <div className="text-sm text-gray-600">App gebruiker</div>
                               </div>
                               <div className="flex items-center gap-2">
+                                <div className="text-sm font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                  {user.role}
+                                </div>
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handleEditUser(user)}
+                                  onClick={() => handleEditUser(user.name)}
                                   className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
                                 >
                                   <Edit className="h-4 w-4" />
@@ -1908,7 +1920,7 @@ function ProductRegistrationApp() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => removeUser(user)}
+                                  onClick={() => removeUser(user.name)}
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -1925,7 +1937,6 @@ function ProductRegistrationApp() {
             </Card>
           </TabsContent>
 
-          {/* Rest of the tabs remain the same... */}
           <TabsContent value="products">
             <Card className="shadow-sm">
               <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
@@ -2186,7 +2197,6 @@ function ProductRegistrationApp() {
             </Card>
           </TabsContent>
 
-          {/* Continue with other tabs... */}
           <TabsContent value="categories">
             <Card className="shadow-sm">
               <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b">
@@ -2768,37 +2778,5 @@ function ProductRegistrationApp() {
         </Dialog>
       </div>
     </div>
-  )
-}
-
-// UserInfo component
-function UserInfo() {
-  const { user, signOut } = useAuth()
-
-  if (!user) return null
-
-  return (
-    <div className="flex items-center gap-3">
-      <div className="text-right">
-        <div className="text-sm font-medium text-gray-900">{user.email}</div>
-        <div className="text-xs text-gray-500">Ingelogd</div>
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={signOut}
-        className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 bg-transparent"
-      >
-        Uitloggen
-      </Button>
-    </div>
-  )
-}
-
-export default function Page() {
-  return (
-    <AuthGuard>
-      <ProductRegistrationApp />
-    </AuthGuard>
   )
 }
