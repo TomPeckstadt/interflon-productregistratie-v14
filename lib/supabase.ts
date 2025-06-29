@@ -146,6 +146,13 @@ interface Registration {
   created_at?: string
 }
 
+// User interface with role
+interface User {
+  id: string
+  name: string
+  role: string
+}
+
 // Mock data for when Supabase is not configured
 const mockUsers = ["Jan Janssen", "Marie Pietersen", "Piet de Vries", "Anna van der Berg"]
 const mockProducts: Product[] = [
@@ -279,7 +286,7 @@ export const fetchProducts = async () => {
 
   try {
     console.log("📊 Fetching products from Supabase...")
-    const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false })
+    const { data, error } = await supabase.from("products").select("*").order("id", { ascending: false })
 
     if (error) {
       console.error("❌ Error fetching products:", error)
@@ -419,16 +426,16 @@ export const fetchRegistrations = async () => {
   }
 }
 
-// SIMPLIFIED: Save functions
-export const saveUser = async (name: string) => {
+// UPDATED: Save functions with role support
+export const saveUser = async (name: string, role = "user") => {
   if (!supabase) {
-    console.log("💾 No Supabase - mock save user:", name)
-    return { data: name, error: null }
+    console.log("💾 No Supabase - mock save user:", { name, role })
+    return { data: { name, role }, error: null }
   }
 
   try {
-    console.log("💾 Saving user to Supabase:", name)
-    const { data, error } = await supabase.from("users").insert([{ name }]).select()
+    console.log("💾 Saving user to Supabase:", { name, role })
+    const { data, error } = await supabase.from("users").insert([{ name, role }]).select()
 
     if (error) {
       console.error("❌ Error saving user:", error)
@@ -436,7 +443,7 @@ export const saveUser = async (name: string) => {
     }
 
     console.log("✅ User saved to Supabase")
-    return { data: name, error: null }
+    return { data: { name, role }, error: null }
   } catch (error) {
     console.error("❌ Error in saveUser:", error)
     return { data: null, error }
@@ -634,15 +641,21 @@ export const updateProduct = async (id: string, updates: any) => {
   }
 }
 
-export const updateUser = async (oldName: string, newName: string) => {
+export const updateUser = async (oldName: string, newName: string, newRole?: string) => {
   if (!supabase) {
-    console.log("🔄 No Supabase - mock update user:", { oldName, newName })
-    return { data: { name: newName }, error: null }
+    console.log("🔄 No Supabase - mock update user:", { oldName, newName, newRole })
+    return { data: { name: newName, role: newRole || "user" }, error: null }
   }
 
   try {
-    console.log("🔄 Updating user in Supabase:", { oldName, newName })
-    const { data, error } = await supabase.from("users").update({ name: newName }).eq("name", oldName).select()
+    console.log("🔄 Updating user in Supabase:", { oldName, newName, newRole })
+
+    const updateData: any = { name: newName }
+    if (newRole) {
+      updateData.role = newRole
+    }
+
+    const { data, error } = await supabase.from("users").update(updateData).eq("name", oldName).select()
 
     if (error) {
       console.error("❌ Error updating user:", error)
@@ -650,7 +663,7 @@ export const updateUser = async (oldName: string, newName: string) => {
     }
 
     console.log("✅ User updated in Supabase")
-    return { data: { name: newName }, error: null }
+    return { data: { name: newName, role: newRole || "user" }, error: null }
   } catch (error) {
     console.error("❌ Error in updateUser:", error)
     return { data: null, error }
@@ -849,14 +862,14 @@ export const deleteCategory = async (id: string) => {
 }
 
 // NEW: Supabase Auth Integration Functions
-export const createAuthUser = async (email: string, password: string, name: string) => {
+export const createAuthUser = async (email: string, password: string, name: string, role = "user") => {
   if (!supabase) {
-    console.log("🔐 No Supabase - mock create auth user:", { email, name })
-    return { data: { user: { id: "mock-id", email, name } }, error: null }
+    console.log("🔐 No Supabase - mock create auth user:", { email, name, role })
+    return { data: { user: { id: "mock-id", email, name, role } }, error: null }
   }
 
   try {
-    console.log("🔐 Creating auth user in Supabase:", { email, name })
+    console.log("🔐 Creating auth user in Supabase:", { email, name, role })
 
     // Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -865,6 +878,7 @@ export const createAuthUser = async (email: string, password: string, name: stri
       options: {
         data: {
           name: name,
+          role: role,
         },
       },
     })
@@ -877,7 +891,7 @@ export const createAuthUser = async (email: string, password: string, name: stri
     console.log("✅ Auth user created successfully:", authData)
 
     // Also add to users table for app functionality
-    const userResult = await saveUser(name)
+    const userResult = await saveUser(name, role)
     if (userResult.error) {
       console.warn("⚠️ Auth user created but failed to add to users table:", userResult.error)
     }
@@ -939,6 +953,7 @@ export const fetchAuthUsers = async () => {
       id: user.id,
       email: user.email || "",
       name: user.user_metadata?.name || user.email?.split("@")[0] || "Unknown",
+      role: user.user_metadata?.role || "user",
       created_at: user.created_at,
     }))
 
@@ -950,7 +965,10 @@ export const fetchAuthUsers = async () => {
   }
 }
 
-export const updateAuthUser = async (userId: string, updates: { email?: string; name?: string; password?: string }) => {
+export const updateAuthUser = async (
+  userId: string,
+  updates: { email?: string; name?: string; password?: string; role?: string },
+) => {
   if (!supabase) {
     console.log("🔐 No Supabase - mock update auth user:", { userId, updates })
     return { data: null, error: null }
@@ -969,8 +987,11 @@ export const updateAuthUser = async (userId: string, updates: { email?: string; 
       updateData.password = updates.password
     }
 
-    if (updates.name) {
-      updateData.user_metadata = { name: updates.name }
+    if (updates.name || updates.role) {
+      updateData.user_metadata = {
+        name: updates.name,
+        role: updates.role,
+      }
     }
 
     const { data, error } = await supabase.auth.admin.updateUserById(userId, updateData)
@@ -1113,3 +1134,6 @@ export const subscribeToRegistrations = (callback: (registrations: Registration[
     .subscribe()
   return subscription
 }
+
+// Export the supabase client for direct use
+export { supabase }
