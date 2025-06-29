@@ -120,6 +120,7 @@ function ProductRegistrationApp() {
   // Auth user management states
   const [newUserEmail, setNewUserEmail] = useState("")
   const [newUserPassword, setNewUserPassword] = useState("")
+  const [newUserLevel, setNewUserLevel] = useState("user")
 
   // Edit states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -1772,7 +1773,7 @@ function ProductRegistrationApp() {
                   <Card className="border-2 border-dashed border-gray-200">
                     <CardContent className="p-4">
                       <h3 className="text-lg font-semibold mb-4">🆕 Nieuwe Gebruiker Toevoegen</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                           <Label className="text-sm font-medium">Naam</Label>
                           <Input
@@ -1798,6 +1799,18 @@ function ProductRegistrationApp() {
                             value={newUserPassword}
                             onChange={(e) => setNewUserPassword(e.target.value)}
                           />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Niveau</Label>
+                          <Select value={newUserLevel} onValueChange={setNewUserLevel}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecteer niveau" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="flex items-end">
                           <Button
