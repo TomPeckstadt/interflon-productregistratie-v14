@@ -101,7 +101,7 @@ function ProductRegistrationApp() {
   const [connectionStatus, setConnectionStatus] = useState("Controleren...")
 
   // Data arrays - SINGLE SOURCE OF TRUTH
-  const [users, setUsers] = useState<{ name: string; role: string }[]>([])
+  const [users, setUsers] = useState<string[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [locations, setLocations] = useState<string[]>([])
   const [purposes, setPurposes] = useState<string[]>([])
@@ -120,7 +120,6 @@ function ProductRegistrationApp() {
   // Auth user management states
   const [newUserEmail, setNewUserEmail] = useState("")
   const [newUserPassword, setNewUserPassword] = useState("")
-  const [newUserLevel, setNewUserLevel] = useState("user")
 
   // Edit states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -740,8 +739,8 @@ function ProductRegistrationApp() {
   // Set default user when users are loaded
   useEffect(() => {
     if (!currentUser && users.length > 0) {
-      setCurrentUser(users[0].name)
-      console.log("👤 Set default user:", users[0].name)
+      setCurrentUser(users[0])
+      console.log("👤 Set default user:", users[0])
     }
   }, [users, currentUser])
 
@@ -827,12 +826,12 @@ function ProductRegistrationApp() {
   const loadMockData = () => {
     console.log("📱 Loading mock data...")
     const mockUsers = [
-      { name: "Tom Peckstadt", role: "Admin" },
-      { name: "Sven De Poorter", role: "User" },
-      { name: "Nele Herteleer", role: "User" },
-      { name: "Wim Peckstadt", role: "Admin" },
-      { name: "Siegfried Weverbergh", role: "User" },
-      { name: "Jan Janssen", role: "User" },
+      "Tom Peckstadt",
+      "Sven De Poorter",
+      "Nele Herteleer",
+      "Wim Peckstadt",
+      "Siegfried Weverbergh",
+      "Jan Janssen",
     ]
     const mockProducts = [
       { id: "1", name: "Interflon Metal Clean spray 500ml", qrcode: "IFLS001", categoryId: "1" },
@@ -934,7 +933,7 @@ function ProductRegistrationApp() {
 
   // Add functions
   const addNewUser = async () => {
-    if (newUserName.trim() && !users.find((user) => user.name === newUserName.trim())) {
+    if (newUserName.trim() && !users.includes(newUserName.trim())) {
       const userName = newUserName.trim()
       const result = await saveUser(userName)
       if (result.error) {
@@ -1221,8 +1220,8 @@ function ProductRegistrationApp() {
   // Function to get filtered and sorted users
   const getFilteredAndSortedUsers = () => {
     return users
-      .filter((user) => user.name.toLowerCase().includes(userSearchQuery.toLowerCase()))
-      .sort((a, b) => a.name.localeCompare(b.name, "nl", { sensitivity: "base" }))
+      .filter((user) => user.toLowerCase().includes(userSearchQuery.toLowerCase()))
+      .sort((a, b) => a.localeCompare(b, "nl", { sensitivity: "base" }))
   }
 
   // Statistics functions
@@ -1460,8 +1459,8 @@ function ProductRegistrationApp() {
                         </SelectTrigger>
                         <SelectContent>
                           {users.map((user) => (
-                            <SelectItem key={user.name} value={user.name}>
-                              {user.name}
+                            <SelectItem key={user} value={user}>
+                              {user}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1627,8 +1626,8 @@ function ProductRegistrationApp() {
                     <SelectContent>
                       <SelectItem value="all">Alle gebruikers</SelectItem>
                       {users.map((user) => (
-                        <SelectItem key={user.name} value={user.name}>
-                          {user.name}
+                        <SelectItem key={user} value={user}>
+                          {user}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1773,7 +1772,7 @@ function ProductRegistrationApp() {
                   <Card className="border-2 border-dashed border-gray-200">
                     <CardContent className="p-4">
                       <h3 className="text-lg font-semibold mb-4">🆕 Nieuwe Gebruiker Toevoegen</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                           <Label className="text-sm font-medium">Naam</Label>
                           <Input
@@ -1799,18 +1798,6 @@ function ProductRegistrationApp() {
                             value={newUserPassword}
                             onChange={(e) => setNewUserPassword(e.target.value)}
                           />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Niveau</Label>
-                          <Select value={newUserLevel} onValueChange={setNewUserLevel}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecteer niveau" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
                         </div>
                         <div className="flex items-end">
                           <Button
@@ -1902,21 +1889,18 @@ function ProductRegistrationApp() {
                         <div className="grid gap-3">
                           {getFilteredAndSortedUsers().map((user) => (
                             <div
-                              key={user.name}
+                              key={user}
                               className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
                             >
                               <div className="flex-1">
-                                <div className="font-medium text-gray-900">{user.name}</div>
+                                <div className="font-medium text-gray-900">{user}</div>
                                 <div className="text-sm text-gray-600">App gebruiker</div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <div className="text-sm font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                  {user.role}
-                                </div>
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handleEditUser(user.name)}
+                                  onClick={() => handleEditUser(user)}
                                   className="bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
                                 >
                                   <Edit className="h-4 w-4" />
@@ -1924,7 +1908,7 @@ function ProductRegistrationApp() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => removeUser(user.name)}
+                                  onClick={() => removeUser(user)}
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <Trash2 className="h-4 w-4" />
