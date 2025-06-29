@@ -50,7 +50,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Plus, Trash2, Search, X, QrCode, ChevronDown, Edit, Printer } from "lucide-react"
+import { Plus, Trash2, Search, X, QrCode, ChevronDown, Edit, Printer, LogOut, User } from "lucide-react"
 
 interface Product {
   id: string
@@ -84,6 +84,10 @@ export default function ProductRegistrationApp() {
   // ALL HOOKS MUST BE AT THE TOP - NEVER CONDITIONAL
   const [isReady, setIsReady] = useState(false)
   const [error, setError] = useState<string>("")
+
+  // Authentication state
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [loggedInUser, setLoggedInUser] = useState("")
 
   // Basic state
   const [currentUser, setCurrentUser] = useState("")
@@ -165,6 +169,32 @@ export default function ProductRegistrationApp() {
 
   // Product search state
   const [productSearchFilter, setProductSearchFilter] = useState("")
+
+  // Login function
+  const handleLogin = (userName: string) => {
+    setLoggedInUser(userName)
+    setCurrentUser(userName)
+    setIsLoggedIn(true)
+    console.log("👤 User logged in:", userName)
+  }
+
+  // Logout function
+  const handleLogout = () => {
+    if (confirm("Weet je zeker dat je wilt uitloggen?")) {
+      setIsLoggedIn(false)
+      setLoggedInUser("")
+      setCurrentUser("")
+
+      // Reset form data
+      setSelectedProduct("")
+      setProductSearchQuery("")
+      setLocation("")
+      setPurpose("")
+      setQrScanResult("")
+
+      console.log("👤 User logged out")
+    }
+  }
 
   // FIXED: handleSubmit function with better error handling
   const handleSubmit = async (event: React.FormEvent) => {
@@ -742,14 +772,6 @@ export default function ProductRegistrationApp() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
-
-  // Set default user when users are loaded
-  useEffect(() => {
-    if (!currentUser && users.length > 0) {
-      setCurrentUser(users[0].name)
-      console.log("👤 Set default user:", users[0].name)
-    }
-  }, [users, currentUser])
 
   const loadAllData = async () => {
     console.log("🔄 Loading all data...")
@@ -1336,6 +1358,70 @@ export default function ProductRegistrationApp() {
     )
   }
 
+  // Show login screen if not logged in
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <Card className="shadow-lg">
+            <CardHeader className="text-center bg-gradient-to-r from-amber-50 to-orange-50">
+              <div className="flex justify-center mb-4">
+                <div
+                  className="flex items-center bg-white p-4 rounded-lg shadow-sm border"
+                  style={{ minWidth: "200px", height: "80px", position: "relative" }}
+                >
+                  <div className="w-1 h-12 bg-amber-500 absolute left-4"></div>
+                  <div
+                    className="text-2xl font-bold text-gray-800 tracking-wide absolute"
+                    style={{ bottom: "16px", left: "32px" }}
+                  >
+                    DEMATIC
+                  </div>
+                </div>
+              </div>
+              <CardTitle className="text-2xl font-bold text-gray-900">Product Registratie</CardTitle>
+              <CardDescription>Selecteer je gebruiker om in te loggen</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Selecteer gebruiker
+                  </Label>
+                  <Select onValueChange={handleLogin}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Kies je naam uit de lijst" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.name} value={user.name}>
+                          <div className="flex items-center gap-2">
+                            <span>{user.name}</span>
+                            <span className="text-xs text-gray-500">({user.role})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div
+                      className={`w-2 h-2 rounded-full ${isSupabaseConnected ? "bg-green-500" : "bg-orange-500"}`}
+                    ></div>
+                    <span>{connectionStatus}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -1378,23 +1464,19 @@ export default function ProductRegistrationApp() {
               </div>
 
               {/* User Info and Logout */}
-              {currentUser && (
+              {loggedInUser && (
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-300">
                   <div className="text-right">
-                    <div className="text-sm font-medium text-gray-900">{currentUser}</div>
+                    <div className="text-sm font-medium text-gray-900">{loggedInUser}</div>
                     <div className="text-xs text-gray-500">Ingelogd</div>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      // Simple logout - just refresh the page or redirect
-                      if (confirm("Weet je zeker dat je wilt uitloggen?")) {
-                        window.location.reload()
-                      }
-                    }}
-                    className="text-xs"
+                    onClick={handleLogout}
+                    className="text-xs flex items-center gap-1 bg-transparent"
                   >
+                    <LogOut className="h-3 w-3" />
                     Uitloggen
                   </Button>
                 </div>
@@ -1480,18 +1562,12 @@ export default function ProductRegistrationApp() {
                   <div className="grid grid-cols-1 gap-4 sm:gap-6">
                     <div className="space-y-2">
                       <Label className="text-sm sm:text-base font-medium">👤 Gebruiker</Label>
-                      <Select value={currentUser} onValueChange={setCurrentUser} required>
-                        <SelectTrigger className="h-10 sm:h-12">
-                          <SelectValue placeholder="Selecteer gebruiker" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.map((user) => (
-                            <SelectItem key={user.name} value={user.name}>
-                              {user.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                        <div className="text-sm font-medium text-green-800">✅ Ingelogd als: {loggedInUser}</div>
+                        <div className="text-xs text-green-600 mt-1">
+                          Registraties worden opgeslagen onder deze naam
+                        </div>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -1619,7 +1695,7 @@ export default function ProductRegistrationApp() {
                   <Button
                     type="submit"
                     className="w-full h-12 text-base font-medium bg-amber-600 hover:bg-amber-700"
-                    disabled={isLoading || !currentUser || !selectedProduct || !location || !purpose}
+                    disabled={isLoading || !selectedProduct || !location || !purpose}
                   >
                     {isLoading ? "Bezig met opslaan..." : "📝 Product Registreren"}
                   </Button>
