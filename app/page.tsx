@@ -138,7 +138,9 @@ export default function ProductRegistrationApp() {
   const [showEditCategoryDialog, setShowEditCategoryDialog] = useState(false)
 
   const [editingUser, setEditingUser] = useState<string>("")
+  const [editingUserRole, setEditingUserRole] = useState<string>("user")
   const [originalUser, setOriginalUser] = useState<string>("")
+  const [originalUserRole, setOriginalUserRole] = useState<string>("user")
   const [showEditUserDialog, setShowEditUserDialog] = useState(false)
 
   const [editingLocation, setEditingLocation] = useState<string>("")
@@ -428,15 +430,18 @@ export default function ProductRegistrationApp() {
     setShowProductDropdown(false)
   }
 
-  const handleEditUser = (user: string) => {
-    setEditingUser(user)
-    setOriginalUser(user)
+  const handleEditUser = (userName: string) => {
+    const user = users.find((u) => u.name === userName)
+    setEditingUser(userName)
+    setEditingUserRole(user?.role || "user")
+    setOriginalUser(userName)
+    setOriginalUserRole(user?.role || "user")
     setShowEditUserDialog(true)
   }
 
   const handleSaveUser = async () => {
-    if (editingUser.trim() && editingUser.trim() !== originalUser) {
-      const result = await updateUser(originalUser, editingUser.trim())
+    if (editingUser.trim() && (editingUser.trim() !== originalUser || editingUserRole !== originalUserRole)) {
+      const result = await updateUser(originalUser, editingUser.trim(), editingUserRole)
       if (result.error) {
         setImportError("Fout bij opslaan gebruiker")
         setTimeout(() => setImportError(""), 3000)
@@ -2922,12 +2927,24 @@ export default function ProductRegistrationApp() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Gebruiker Bewerken</DialogTitle>
-              <DialogDescription>Wijzig de gebruiker naam</DialogDescription>
+              <DialogDescription>Wijzig de gebruiker naam en rol</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label>Gebruiker Naam</Label>
                 <Input value={editingUser} onChange={(e) => setEditingUser(e.target.value)} />
+              </div>
+              <div>
+                <Label>Rol</Label>
+                <Select value={editingUserRole} onValueChange={setEditingUserRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowEditUserDialog(false)}>
