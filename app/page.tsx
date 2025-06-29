@@ -263,6 +263,13 @@ export default function ProductRegistrationApp() {
       if (foundProduct) {
         setSelectedProduct(foundProduct.name)
         setProductSearchQuery(foundProduct.name)
+
+        // FIXED: Automatically select the product's category
+        if (foundProduct.categoryId) {
+          setSelectedCategory(foundProduct.categoryId)
+          console.log("🗂️ Auto-selected category:", foundProduct.categoryId)
+        }
+
         setImportMessage(`✅ Product gevonden: ${foundProduct.name}`)
         setTimeout(() => setImportMessage(""), 3000)
       } else {
