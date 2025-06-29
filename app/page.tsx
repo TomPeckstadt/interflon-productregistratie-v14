@@ -1376,6 +1376,29 @@ export default function ProductRegistrationApp() {
                 </div>
                 <div className="hidden md:block">{registrations.length} registraties</div>
               </div>
+
+              {/* User Info and Logout */}
+              {currentUser && (
+                <div className="flex items-center gap-3 pl-4 border-l border-gray-300">
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-900">{currentUser}</div>
+                    <div className="text-xs text-gray-500">Ingelogd</div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Simple logout - just refresh the page or redirect
+                      if (confirm("Weet je zeker dat je wilt uitloggen?")) {
+                        window.location.reload()
+                      }
+                    }}
+                    className="text-xs"
+                  >
+                    Uitloggen
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
